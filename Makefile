@@ -45,14 +45,14 @@ test: test-unit
 # Start services with Docker Compose
 run-docker:
 	@echo "Starting services with Docker Compose..."
-	docker-compose up --build -d
+	docker compose up --build -d
 	@echo "Services started! API available at http://localhost:8080"
 	@echo "gRPC service available at localhost:50051"
 
 # Stop Docker Compose services
 stop-docker:
 	@echo "Stopping Docker Compose services..."
-	docker-compose down
+	docker compose down
 
 # Run services locally (requires Go and protobuf compiler)
 run-local: proto
@@ -65,14 +65,14 @@ run-local: proto
 
 # Show Docker Compose logs
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
 	rm -rf bin/
 	go clean
-	docker-compose down --volumes --remove-orphans
+	docker compose down --volumes --remove-orphans
 
 # Test the API endpoints
 test-api:

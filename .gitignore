@@ -24,9 +24,38 @@ profile.cov
 go.work
 go.work.sum
 
-# env file
-.env
+# Build output directory
+bin/
+dist/
 
-# Editor/IDE
-# .idea/
-# .vscode/
+# Generated protobuf files
+proto/*.pb.go
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
