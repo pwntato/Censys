@@ -17,6 +17,7 @@ This project consists of two microservices:
 - **Health Check**: Monitor service health
 - **Concurrent Access**: Thread-safe operations
 - **Docker Support**: Containerized deployment
+- **CORS Support**: Cross-origin resource sharing enabled
 - **Comprehensive Testing**: Unit and integration tests
 
 ## API Endpoints
@@ -48,7 +49,7 @@ cd Censys
 2. Build and start the services:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 3. Test the API:
@@ -71,7 +72,7 @@ curl -X DELETE http://localhost:8080/kv/delete/test-key
 
 ### Manual Build and Run
 
-1. Install dependencies:
+1. Install dependencies (requires Go 1.23.0 or later):
 
 ```bash
 go mod download
@@ -115,13 +116,25 @@ Run integration tests (requires both services to be running):
 
 ```bash
 # Start services first
-docker-compose up -d
+docker compose up -d
 
 # Run integration tests
 go test -v ./integration_test.go
 
 # Stop services
-docker-compose down
+docker compose down
+```
+
+### Automated API Testing
+
+Use the provided test script for comprehensive API testing:
+
+```bash
+# Make the script executable
+chmod +x test_api.sh
+
+# Run the test script (requires services to be running)
+./test_api.sh
 ```
 
 ### Manual Testing
@@ -273,8 +286,8 @@ The architecture is designed to be extensible:
 1. **Check service logs**:
 
 ```bash
-docker-compose logs kvstore-server
-docker-compose logs api-server
+docker compose logs kvstore-server
+docker compose logs api-server
 ```
 
 2. **Test gRPC connection directly**:
