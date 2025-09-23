@@ -70,6 +70,25 @@ curl http://localhost:8080/kv/get/test-key
 curl -X DELETE http://localhost:8080/kv/delete/test-key
 ```
 
+### Environment Variables
+
+The services can be configured using the following environment variables:
+
+| Variable              | Default                | Description                                                 |
+| --------------------- | ---------------------- | ----------------------------------------------------------- |
+| `KVSTORE_PORT`        | `50051`                | Port for the Key-Value Store gRPC service                   |
+| `API_PORT`            | `8080`                 | Port for the API Server HTTP service                        |
+| `GRPC_SERVER_ADDRESS` | `kvstore-server:50051` | Address of the gRPC server for the API server to connect to |
+
+You can set these variables in your environment or create a `.env` file in the project root:
+
+```bash
+# Example .env file
+KVSTORE_PORT=50051
+API_PORT=8080
+GRPC_SERVER_ADDRESS=kvstore-server:50051
+```
+
 ### Manual Build and Run
 
 1. Install dependencies (requires Go 1.23.0 or later):

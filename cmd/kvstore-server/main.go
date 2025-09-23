@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"sync"
 
 	"censys-kvstore/proto"
@@ -30,7 +31,7 @@ func NewKVStore() *kvStore {
 func (k *kvStore) Set(ctx context.Context, req *proto.SetRequest) (*proto.SetResponse, error) {
 	k.mu.Lock()
 	defer k.mu.Unlock()
-	
+
 	k.data[req.Key] = req.Value
 	return &proto.SetResponse{
 		Success: true,
@@ -42,7 +43,7 @@ func (k *kvStore) Set(ctx context.Context, req *proto.SetRequest) (*proto.SetRes
 func (k *kvStore) Get(ctx context.Context, req *proto.GetRequest) (*proto.GetResponse, error) {
 	k.mu.RLock()
 	defer k.mu.RUnlock()
-	
+
 	value, exists := k.data[req.Key]
 	if !exists {
 		return &proto.GetResponse{
@@ -51,7 +52,7 @@ func (k *kvStore) Get(ctx context.Context, req *proto.GetRequest) (*proto.GetRes
 			Message: fmt.Sprintf("Key '%s' not found", req.Key),
 		}, nil
 	}
-	
+
 	return &proto.GetResponse{
 		Success: true,
 		Value:   value,
@@ -63,7 +64,7 @@ func (k *kvStore) Get(ctx context.Context, req *proto.GetRequest) (*proto.GetRes
 func (k *kvStore) Delete(ctx context.Context, req *proto.DeleteRequest) (*proto.DeleteResponse, error) {
 	k.mu.Lock()
 	defer k.mu.Unlock()
-	
+
 	_, exists := k.data[req.Key]
 	if !exists {
 		return &proto.DeleteResponse{
@@ -71,7 +72,7 @@ func (k *kvStore) Delete(ctx context.Context, req *proto.DeleteRequest) (*proto.
 			Message: fmt.Sprintf("Key '%s' not found", req.Key),
 		}, nil
 	}
-	
+
 	delete(k.data, req.Key)
 	return &proto.DeleteResponse{
 		Success: true,
@@ -80,21 +81,27 @@ func (k *kvStore) Delete(ctx context.Context, req *proto.DeleteRequest) (*proto.
 }
 
 func main() {
+	// Get port from environment variable, default to 50051
+	port := os.Getenv("KVSTORE_PORT")
+	if port == "" {
+		port = "50051"
+	}
+
 	// Create the key-value store instance
 	store := NewKVStore()
-	
+
 	// Create gRPC server
 	grpcServer := grpc.NewServer()
 	proto.RegisterKeyValueStoreServer(grpcServer, store)
-	
-	// Start listening on port 50051
-	lis, err := net.Listen("tcp", ":50051")
+
+	// Start listening on the specified port
+	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {
 		log.Fatalf("Failed to listen: %v", err)
 	}
-	
-	log.Println("Key-Value Store gRPC server starting on :50051")
-	
+
+	log.Printf("Key-Value Store gRPC server starting on :%s", port)
+
 	// Start the server
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("Failed to serve: %v", err)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"censys-kvstore/proto"
@@ -170,8 +171,20 @@ func (s *APIServer) Health(c *gin.Context) {
 }
 
 func main() {
+	// Get gRPC server address from environment variable, default to kvstore-server:50051
+	grpcAddr := os.Getenv("GRPC_SERVER_ADDRESS")
+	if grpcAddr == "" {
+		grpcAddr = "kvstore-server:50051"
+	}
+
+	// Get API port from environment variable, default to 8080
+	port := os.Getenv("API_PORT")
+	if port == "" {
+		port = "8080"
+	}
+
 	// Create API server
-	apiServer, err := NewAPIServer("kvstore-server:50051")
+	apiServer, err := NewAPIServer(grpcAddr)
 	if err != nil {
 		log.Fatalf("Failed to create API server: %v", err)
 	}
@@ -203,8 +216,8 @@ func main() {
 	router.DELETE("/kv/delete/:key", apiServer.Delete)
 
 	// Start server
-	log.Println("API server starting on :8080")
-	if err := router.Run(":8080"); err != nil {
+	log.Printf("API server starting on :%s", port)
+	if err := router.Run(":" + port); err != nil {
 		log.Fatalf("Failed to start API server: %v", err)
 	}
 }
