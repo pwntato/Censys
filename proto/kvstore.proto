@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package kvstore;
+
+option go_package = "censys-kvstore/proto";
+
+// Key-Value store service definition
+service KeyValueStore {
+  // Store a value at a given key
+  rpc Set(SetRequest) returns (SetResponse);
+  
+  // Retrieve the value for a given key
+  rpc Get(GetRequest) returns (GetResponse);
+  
+  // Delete a given key
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+}
+
+// Request to store a key-value pair
+message SetRequest {
+  string key = 1;
+  string value = 2;
+}
+
+// Response for storing a key-value pair
+message SetResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+// Request to retrieve a value by key
+message GetRequest {
+  string key = 1;
+}
+
+// Response for retrieving a value
+message GetResponse {
+  bool success = 1;
+  string value = 2;
+  string message = 3;
+}
+
+// Request to delete a key
+message DeleteRequest {
+  string key = 1;
+}
+
+// Response for deleting a key
+message DeleteResponse {
+  bool success = 1;
+  string message = 2;
+}

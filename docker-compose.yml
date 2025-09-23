@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  kvstore-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.kvstore-server
+    container_name: kvstore-server
+    ports:
+      - "50051:50051"
+    networks:
+      - kvstore-network
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "50051"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.api-server
+    container_name: api-server
+    ports:
+      - "8080:8080"
+    depends_on:
+      kvstore-server:
+        condition: service_healthy
+    networks:
+      - kvstore-network
+    environment:
+      - GRPC_SERVER_ADDRESS=kvstore-server:50051
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  kvstore-network:
+    driver: bridge
