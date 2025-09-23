@@ -21,7 +21,7 @@ type APIServer struct {
 // NewAPIServer creates a new API server instance
 func NewAPIServer(grpcAddr string) (*APIServer, error) {
 	// Connect to the gRPC server
-	conn, err := grpc.Dial(grpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient(grpcAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}

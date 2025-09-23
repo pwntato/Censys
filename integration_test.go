@@ -23,7 +23,7 @@ func startTestServers() error {
 
 func TestIntegration_SetAndGet(t *testing.T) {
 	// Test gRPC connection
-	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, err := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		t.Skipf("Skipping integration test: gRPC server not available: %v", err)
 		return
@@ -105,7 +105,7 @@ func TestIntegration_HTTPAPI(t *testing.T) {
 		"value": "http-test-value",
 	}
 	jsonData, _ := json.Marshal(setData)
-	
+
 	resp, err = http.Post(baseURL+"/kv/set", "application/json", bytes.NewBuffer(jsonData))
 	if err != nil {
 		t.Fatalf("HTTP Set failed: %v", err)
@@ -164,9 +164,9 @@ func TestIntegration_HTTPAPI(t *testing.T) {
 func TestIntegration_EndToEnd(t *testing.T) {
 	// This test requires both services to be running
 	// It tests the complete flow: HTTP API -> gRPC -> Storage
-	
+
 	baseURL := "http://localhost:8080"
-	
+
 	// Test data
 	testCases := []struct {
 		key   string
@@ -176,7 +176,7 @@ func TestIntegration_EndToEnd(t *testing.T) {
 		{"key2", "value2"},
 		{"key3", "value3"},
 	}
-	
+
 	// Set multiple values
 	for _, tc := range testCases {
 		setData := map[string]string{
@@ -184,18 +184,18 @@ func TestIntegration_EndToEnd(t *testing.T) {
 			"value": tc.value,
 		}
 		jsonData, _ := json.Marshal(setData)
-		
+
 		resp, err := http.Post(baseURL+"/kv/set", "application/json", bytes.NewBuffer(jsonData))
 		if err != nil {
 			t.Fatalf("Failed to set %s: %v", tc.key, err)
 		}
 		resp.Body.Close()
-		
+
 		if resp.StatusCode != http.StatusOK {
 			t.Fatalf("Failed to set %s, status: %d", tc.key, resp.StatusCode)
 		}
 	}
-	
+
 	// Get all values
 	for _, tc := range testCases {
 		resp, err := http.Get(baseURL + "/kv/get/" + tc.key)
@@ -203,12 +203,12 @@ func TestIntegration_EndToEnd(t *testing.T) {
 			t.Fatalf("Failed to get %s: %v", tc.key, err)
 		}
 		resp.Body.Close()
-		
+
 		if resp.StatusCode != http.StatusOK {
 			t.Fatalf("Failed to get %s, status: %d", tc.key, resp.StatusCode)
 		}
 	}
-	
+
 	// Delete all values
 	for _, tc := range testCases {
 		req, _ := http.NewRequest("DELETE", baseURL+"/kv/delete/"+tc.key, nil)
@@ -218,12 +218,12 @@ func TestIntegration_EndToEnd(t *testing.T) {
 			t.Fatalf("Failed to delete %s: %v", tc.key, err)
 		}
 		resp.Body.Close()
-		
+
 		if resp.StatusCode != http.StatusOK {
 			t.Fatalf("Failed to delete %s, status: %d", tc.key, resp.StatusCode)
 		}
 	}
-	
+
 	// Verify all values are deleted
 	for _, tc := range testCases {
 		resp, err := http.Get(baseURL + "/kv/get/" + tc.key)
@@ -231,7 +231,7 @@ func TestIntegration_EndToEnd(t *testing.T) {
 			t.Fatalf("Failed to verify deletion of %s: %v", tc.key, err)
 		}
 		resp.Body.Close()
-		
+
 		if resp.StatusCode != http.StatusNotFound {
 			t.Fatalf("Expected %s to be deleted, but it still exists", tc.key)
 		}
