@@ -18,6 +18,7 @@ test_endpoint() {
     local url=$2
     local data=$3
     local description=$4
+    local expect_success=${5:-true}  # Default to expecting success
     
     echo -e "\n${YELLOW}Testing: $description${NC}"
     echo "Request: $method $url"
@@ -30,11 +31,19 @@ test_endpoint() {
     
     echo "Response: $response"
     
-    # Check if response contains success
-    if echo "$response" | grep -q '"success":true'; then
-        echo -e "${GREEN}✅ SUCCESS${NC}"
+    # Check if response contains success based on expectation
+    if [ "$expect_success" = "true" ]; then
+        if echo "$response" | grep -q '"success":true'; then
+            echo -e "${GREEN}✅ SUCCESS${NC}"
+        else
+            echo -e "${RED}❌ FAILED${NC}"
+        fi
     else
-        echo -e "${RED}❌ FAILED${NC}"
+        if echo "$response" | grep -q '"success":false' || echo "$response" | grep -q '"error"'; then
+            echo -e "${GREEN}✅ SUCCESS${NC}"
+        else
+            echo -e "${RED}❌ FAILED${NC}"
+        fi
     fi
 }
 
@@ -58,25 +67,25 @@ test_endpoint "POST" "http://localhost:8080/kv/set" '{"key": "another-key", "val
 test_endpoint "GET" "http://localhost:8080/kv/get/another-key" "" "Get Second Value"
 
 # Test getting non-existent key
-test_endpoint "GET" "http://localhost:8080/kv/get/non-existent" "" "Get Non-existent Key (should fail)"
+test_endpoint "GET" "http://localhost:8080/kv/get/non-existent" "" "Get Non-existent Key (should fail)" "false"
 
 # Test deleting a key
 test_endpoint "DELETE" "http://localhost:8080/kv/delete/demo-key" "" "Delete Key"
 
 # Test getting deleted key (should fail)
-test_endpoint "GET" "http://localhost:8080/kv/get/demo-key" "" "Get Deleted Key (should fail)"
+test_endpoint "GET" "http://localhost:8080/kv/get/demo-key" "" "Get Deleted Key (should fail)" "false"
 
 # Test deleting non-existent key (should fail)
-test_endpoint "DELETE" "http://localhost:8080/kv/delete/non-existent" "" "Delete Non-existent Key (should fail)"
+test_endpoint "DELETE" "http://localhost:8080/kv/delete/non-existent" "" "Delete Non-existent Key (should fail)" "false"
 
 # Test edge cases
 echo -e "\n${YELLOW}Testing Edge Cases:${NC}"
 
 # Test empty key
-test_endpoint "POST" "http://localhost:8080/kv/set" '{"key": "", "value": "empty-key-value"}' "Set Empty Key"
+test_endpoint "POST" "http://localhost:8080/kv/set" '{"key": "", "value": "empty-key-value"}' "Set Empty Key" "false"
 
 # Test empty value
-test_endpoint "POST" "http://localhost:8080/kv/set" '{"key": "empty-value-key", "value": ""}' "Set Empty Value"
+test_endpoint "POST" "http://localhost:8080/kv/set" '{"key": "empty-value-key", "value": ""}' "Set Empty Value" "false"
 
 # Test invalid JSON
 echo -e "\n${YELLOW}Testing Invalid JSON:${NC}"

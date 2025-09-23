@@ -148,7 +148,7 @@ func (s *APIServer) Delete(c *gin.Context) {
 
 // Health handles GET /health
 func (s *APIServer) Health(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"status": "healthy"})
+	c.JSON(http.StatusOK, gin.H{"success": true, "status": "healthy"})
 }
 
 func main() {
