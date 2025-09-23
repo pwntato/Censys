@@ -25,7 +25,7 @@ func NewAPIServer(grpcAddr string) (*APIServer, error) {
 	if err != nil {
 		return nil, err
 	}
-	
+
 	client := proto.NewKeyValueStoreClient(conn)
 	return &APIServer{grpcClient: client}, nil
 }
@@ -62,17 +62,17 @@ func (s *APIServer) Set(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	// Check if gRPC client is available (for testing)
 	if s.grpcClient == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "gRPC client not available"})
 		return
 	}
-	
+
 	// Call gRPC service
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	grpcResp, err := s.grpcClient.Set(ctx, &proto.SetRequest{
 		Key:   req.Key,
 		Value: req.Value,
@@ -81,12 +81,12 @@ func (s *APIServer) Set(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	status := http.StatusOK
 	if !grpcResp.Success {
 		status = http.StatusBadRequest
 	}
-	
+
 	c.JSON(status, SetResponse{
 		Success: grpcResp.Success,
 		Message: grpcResp.Message,
@@ -100,28 +100,28 @@ func (s *APIServer) Get(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "key parameter is required"})
 		return
 	}
-	
+
 	// Check if gRPC client is available (for testing)
 	if s.grpcClient == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "gRPC client not available"})
 		return
 	}
-	
+
 	// Call gRPC service
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	grpcResp, err := s.grpcClient.Get(ctx, &proto.GetRequest{Key: key})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	status := http.StatusOK
 	if !grpcResp.Success {
 		status = http.StatusNotFound
 	}
-	
+
 	c.JSON(status, GetResponse{
 		Success: grpcResp.Success,
 		Value:   grpcResp.Value,
@@ -136,28 +136,28 @@ func (s *APIServer) Delete(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "key parameter is required"})
 		return
 	}
-	
+
 	// Check if gRPC client is available (for testing)
 	if s.grpcClient == nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "gRPC client not available"})
 		return
 	}
-	
+
 	// Call gRPC service
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	
+
 	grpcResp, err := s.grpcClient.Delete(ctx, &proto.DeleteRequest{Key: key})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	
+
 	status := http.StatusOK
 	if !grpcResp.Success {
 		status = http.StatusNotFound
 	}
-	
+
 	c.JSON(status, DeleteResponse{
 		Success: grpcResp.Success,
 		Message: grpcResp.Message,
@@ -175,33 +175,33 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to create API server: %v", err)
 	}
-	
+
 	// Set Gin to release mode for production
 	gin.SetMode(gin.ReleaseMode)
-	
+
 	// Create Gin router
 	router := gin.Default()
-	
+
 	// Add CORS middleware
 	router.Use(func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "*")
 		c.Header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
 		c.Header("Access-Control-Allow-Headers", "Content-Type")
-		
+
 		if c.Request.Method == "OPTIONS" {
 			c.AbortWithStatus(204)
 			return
 		}
-		
+
 		c.Next()
 	})
-	
+
 	// Define routes
 	router.GET("/health", apiServer.Health)
 	router.POST("/kv/set", apiServer.Set)
 	router.GET("/kv/get/:key", apiServer.Get)
 	router.DELETE("/kv/delete/:key", apiServer.Delete)
-	
+
 	// Start server
 	log.Println("API server starting on :8080")
 	if err := router.Run(":8080"); err != nil {
