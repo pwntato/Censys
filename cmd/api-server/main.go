@@ -63,6 +63,12 @@ func (s *APIServer) Set(c *gin.Context) {
 		return
 	}
 	
+	// Check if gRPC client is available (for testing)
+	if s.grpcClient == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "gRPC client not available"})
+		return
+	}
+	
 	// Call gRPC service
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -95,6 +101,12 @@ func (s *APIServer) Get(c *gin.Context) {
 		return
 	}
 	
+	// Check if gRPC client is available (for testing)
+	if s.grpcClient == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "gRPC client not available"})
+		return
+	}
+	
 	// Call gRPC service
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
@@ -122,6 +134,12 @@ func (s *APIServer) Delete(c *gin.Context) {
 	key := c.Param("key")
 	if key == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "key parameter is required"})
+		return
+	}
+	
+	// Check if gRPC client is available (for testing)
+	if s.grpcClient == nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "gRPC client not available"})
 		return
 	}
 	
