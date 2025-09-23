@@ -1,4 +1,4 @@
-.PHONY: help build test clean run-docker run-local stop-docker proto
+.PHONY: help build test clean run-docker run-local stop-docker proto test-all
 
 # Default target
 help:
@@ -7,6 +7,7 @@ help:
 	@echo "  test         - Run all tests"
 	@echo "  test-unit    - Run unit tests only"
 	@echo "  test-integration - Run integration tests (requires services running)"
+	@echo "  test-all     - Comprehensive test: build containers, run all tests, clean up"
 	@echo "  proto        - Generate protobuf Go files"
 	@echo "  run-docker   - Start services with Docker Compose"
 	@echo "  stop-docker  - Stop Docker Compose services"
@@ -103,3 +104,26 @@ test-full: run-docker
 	make test-integration
 	make test-api
 	make stop-docker
+
+# Comprehensive test target - builds containers, runs all tests, and cleans up
+test-all: run-docker
+	@echo "🚀 Starting comprehensive test suite..."
+	@echo "Waiting for services to be ready..."
+	sleep 10
+	@echo "Running API tests..."
+	make test-api-comprehensive
+	@echo "Running integration tests (if Go is available)..."
+	@if command -v go >/dev/null 2>&1; then \
+		make test-integration; \
+	else \
+		echo "⚠️  Skipping Go integration tests (Go not installed)"; \
+	fi
+	@echo "Running unit tests (if Go is available)..."
+	@if command -v go >/dev/null 2>&1; then \
+		make test-unit; \
+	else \
+		echo "⚠️  Skipping Go unit tests (Go not installed)"; \
+	fi
+	@echo "Stopping services..."
+	make stop-docker
+	@echo "✅ Comprehensive test suite completed!"
