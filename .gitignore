@@ -28,9 +28,6 @@ go.work.sum
 bin/
 dist/
 
-# Generated protobuf files
-proto/*.pb.go
-
 # OS generated files
 .DS_Store
 .DS_Store?
