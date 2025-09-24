@@ -8,7 +8,7 @@ import (
 	"os"
 	"sync"
 
-	"censys-kvstore/proto"
+	"github.com/pwntato/Censys/proto"
 
 	"google.golang.org/grpc"
 )

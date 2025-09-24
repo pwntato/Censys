@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"censys-kvstore/proto"
+	"github.com/pwntato/Censys/proto"
 )
 
 func TestKVStore_Set(t *testing.T) {
@@ -62,27 +62,27 @@ func TestKVStore_Get(t *testing.T) {
 	store.Set(ctx, &proto.SetRequest{Key: "existing-key", Value: "existing-value"})
 
 	tests := []struct {
-		name           string
-		key            string
-		expectedValue  string
+		name            string
+		key             string
+		expectedValue   string
 		expectedSuccess bool
 	}{
 		{
-			name:           "Get existing key",
-			key:            "existing-key",
-			expectedValue:  "existing-value",
+			name:            "Get existing key",
+			key:             "existing-key",
+			expectedValue:   "existing-value",
 			expectedSuccess: true,
 		},
 		{
-			name:           "Get non-existing key",
-			key:            "non-existing-key",
-			expectedValue:  "",
+			name:            "Get non-existing key",
+			key:             "non-existing-key",
+			expectedValue:   "",
 			expectedSuccess: false,
 		},
 		{
-			name:           "Get empty key",
-			key:            "",
-			expectedValue:  "",
+			name:            "Get empty key",
+			key:             "",
+			expectedValue:   "",
 			expectedSuccess: false,
 		},
 	}
@@ -112,23 +112,23 @@ func TestKVStore_Delete(t *testing.T) {
 	store.Set(ctx, &proto.SetRequest{Key: "existing-key", Value: "existing-value"})
 
 	tests := []struct {
-		name           string
-		key            string
+		name            string
+		key             string
 		expectedSuccess bool
 	}{
 		{
-			name:           "Delete existing key",
-			key:            "existing-key",
+			name:            "Delete existing key",
+			key:             "existing-key",
 			expectedSuccess: true,
 		},
 		{
-			name:           "Delete non-existing key",
-			key:            "non-existing-key",
+			name:            "Delete non-existing key",
+			key:             "non-existing-key",
 			expectedSuccess: false,
 		},
 		{
-			name:           "Delete empty key",
-			key:            "",
+			name:            "Delete empty key",
+			key:             "",
 			expectedSuccess: false,
 		},
 	}

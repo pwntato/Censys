@@ -1,4 +1,4 @@
-module censys-kvstore
+module github.com/pwntato/Censys
 
 go 1.23.0
 

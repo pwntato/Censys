@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package kvstore;
 
-option go_package = "censys-kvstore/proto";
+option go_package = "github.com/pwntato/Censys/proto";
 
 // Key-Value store service definition
 service KeyValueStore {

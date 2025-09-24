@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"censys-kvstore/proto"
+	"github.com/pwntato/Censys/proto"
 
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"

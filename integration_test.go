@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"censys-kvstore/proto"
+	"github.com/pwntato/Censys/proto"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
