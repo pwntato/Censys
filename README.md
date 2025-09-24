@@ -37,38 +37,40 @@ This project consists of two microservices:
 
 ## Quick Start
 
-### Using Docker Compose (Recommended)
-
-1. Clone the repository:
+1. Clone and start services:
 
 ```bash
 git clone <repository-url>
 cd Censys
+make run-docker
 ```
 
-2. Build and start the services:
+2. Test the API:
 
 ```bash
-docker compose up --build
+make test-api
 ```
 
-3. Test the API:
+3. Stop services:
 
 ```bash
-# Health check
-curl http://localhost:8080/health
-
-# Set a key-value pair
-curl -X POST http://localhost:8080/kv/set \
-  -H "Content-Type: application/json" \
-  -d '{"key": "test-key", "value": "test-value"}'
-
-# Get the value
-curl http://localhost:8080/kv/get/test-key
-
-# Delete the key
-curl -X DELETE http://localhost:8080/kv/delete/test-key
+make stop-docker
 ```
+
+## Available Commands
+
+| Command            | Description                        |
+| ------------------ | ---------------------------------- |
+| `make help`        | Show all commands                  |
+| `make run-docker`  | Start services with Docker Compose |
+| `make stop-docker` | Stop Docker Compose services       |
+| `make test-all`    | Run complete test suite            |
+| `make test-unit`   | Run unit tests                     |
+| `make test-api`    | Test API endpoints                 |
+| `make run-local`   | Run services locally (requires Go) |
+| `make build`       | Build both services                |
+| `make logs`        | Show service logs                  |
+| `make clean`       | Clean build artifacts              |
 
 ### Environment Variables
 
@@ -89,236 +91,41 @@ API_PORT=8080
 GRPC_SERVER_ADDRESS=kvstore-server:50051
 ```
 
-### Manual Build and Run
-
-1. Install dependencies (requires Go 1.23.0 or later):
-
-```bash
-go mod download
-```
-
-2. Generate protobuf files:
-
-```bash
-protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/kvstore.proto
-```
-
-3. Start the Key-Value Store service:
-
-```bash
-go run cmd/kvstore-server/main.go
-```
-
-4. In another terminal, start the API server:
-
-```bash
-go run cmd/api-server/main.go
-```
-
 ## Testing
 
-### Unit Tests
+```bash
+# Run all tests
+make test-all
 
-Run unit tests for both services:
+# Individual test types
+make test-unit        # Unit tests
+make test-integration # Integration tests (requires services running)
+make test-api         # API endpoint tests
+```
+
+## Docker
 
 ```bash
-# Test the Key-Value Store service
-go test ./cmd/kvstore-server/...
-
-# Test the API server
-go test ./cmd/api-server/...
+make run-docker  # Start services
+make stop-docker # Stop services
+make logs        # View logs
+make clean       # Clean up
 ```
-
-### Integration Tests
-
-Run integration tests (requires both services to be running):
-
-```bash
-# Start services first
-docker compose up -d
-
-# Run integration tests
-go test -v ./integration_test.go
-
-# Stop services
-docker compose down
-```
-
-### Automated API Testing
-
-Use the provided test script for comprehensive API testing:
-
-```bash
-# Make the script executable
-chmod +x test_api.sh
-
-# Run the test script (requires services to be running)
-./test_api.sh
-```
-
-### Manual Testing
-
-1. **Set a value**:
-
-```bash
-curl -X POST http://localhost:8080/kv/set \
-  -H "Content-Type: application/json" \
-  -d '{"key": "my-key", "value": "my-value"}'
-```
-
-Expected response:
-
-```json
-{
-  "success": true,
-  "message": "Key 'my-key' set successfully"
-}
-```
-
-2. **Get a value**:
-
-```bash
-curl http://localhost:8080/kv/get/my-key
-```
-
-Expected response:
-
-```json
-{
-  "success": true,
-  "value": "my-value",
-  "message": "Key 'my-key' retrieved successfully"
-}
-```
-
-3. **Delete a value**:
-
-```bash
-curl -X DELETE http://localhost:8080/kv/delete/my-key
-```
-
-Expected response:
-
-```json
-{
-  "success": true,
-  "message": "Key 'my-key' deleted successfully"
-}
-```
-
-4. **Get non-existent key**:
-
-```bash
-curl http://localhost:8080/kv/get/non-existent
-```
-
-Expected response:
-
-```json
-{
-  "success": false,
-  "value": "",
-  "message": "Key 'non-existent' not found"
-}
-```
-
-## Docker Images
-
-### Build individual images:
-
-```bash
-# Build Key-Value Store service
-docker build -f Dockerfile.kvstore-server -t censys-kvstore-server .
-
-# Build API server
-docker build -f Dockerfile.api-server -t censys-api-server .
-```
-
-### Run individual containers:
-
-```bash
-# Start Key-Value Store service
-docker run -p 50051:50051 censys-kvstore-server
-
-# Start API server (in another terminal)
-docker run -p 8080:8080 --network host censys-api-server
-```
-
-## Development
 
 ### Project Structure
 
 ```
-.
-├── cmd/
-│   ├── kvstore-server/     # gRPC Key-Value Store service
-│   └── api-server/         # REST API service
-├── proto/                  # Protocol Buffer definitions
-├── Dockerfile.kvstore-server
-├── Dockerfile.api-server
-├── docker-compose.yml
-├── go.mod
-├── go.sum
-└── README.md
+cmd/
+├── kvstore-server/  # gRPC service
+└── api-server/      # REST API
+proto/               # Protocol definitions
 ```
-
-### Adding New Features
-
-The architecture is designed to be extensible:
-
-1. **Adding new KV operations**: Extend the protobuf definition in `proto/kvstore.proto`
-2. **Adding new REST endpoints**: Add new handlers in `cmd/api-server/main.go`
-3. **Changing transport protocol**: The gRPC layer can be easily replaced with other protocols
-
-### Code Quality
-
-- **Thread Safety**: All operations use proper locking mechanisms
-- **Error Handling**: Comprehensive error handling and meaningful error messages
-- **Logging**: Structured logging for debugging and monitoring
-- **Health Checks**: Built-in health check endpoints for both services
-- **Security**: Non-root user execution in Docker containers
-
-## Performance Considerations
-
-- **In-Memory Storage**: Current implementation uses in-memory storage for simplicity
-- **Concurrent Access**: Thread-safe operations support concurrent reads and writes
-- **Connection Pooling**: gRPC connections are reused efficiently
-- **Timeouts**: All operations have appropriate timeouts to prevent hanging
-
-## Monitoring and Observability
-
-- **Health Endpoints**: Both services expose health check endpoints
-- **Docker Health Checks**: Container health monitoring
-- **Structured Logging**: Easy to parse logs for monitoring systems
-- **Metrics Ready**: Architecture supports easy addition of metrics collection
 
 ## Troubleshooting
 
-### Common Issues
-
-1. **Port conflicts**: Ensure ports 8080 and 50051 are available
-2. **gRPC connection issues**: Verify the Key-Value Store service is running before starting the API server
-3. **Docker build failures**: Ensure Docker is running and has sufficient resources
-
-### Debugging
-
-1. **Check service logs**:
-
 ```bash
-docker compose logs kvstore-server
-docker compose logs api-server
-```
-
-2. **Test gRPC connection directly**:
-
-```bash
-grpcurl -plaintext localhost:50051 list
-```
-
-3. **Verify API endpoints**:
-
-```bash
-curl -v http://localhost:8080/health
+make logs  # View service logs
+curl http://localhost:8080/health  # Test API
 ```
 
 ## License
